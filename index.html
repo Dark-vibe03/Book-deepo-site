@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Books Deepo | Atomic Habits</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#f5f1e9;color:#25251f;
+ font-family:Arial,sans-serif
+}
+header{
+ background:#20231f;color:white;padding:20px;
+ display:flex;justify-content:space-between;
+ align-items:center
+}
+header h2{letter-spacing:2px;font-size:20px}
+select,button{
+ padding:12px 18px;border-radius:8px;
+ border:1px solid #aaa;font-size:15px;cursor:pointer
+}
+main{max-width:850px;margin:auto;padding:20px}
+.hero{text-align:center;padding:45px 10px}
+.hero h1{font-family:Georgia,serif;font-size:38px}
+.hero p{color:#666;line-height:1.7}
+.card{
+ background:white;border-radius:14px;
+ padding:25px;margin:20px 0
+}
+.primary{
+ background:#25291f;color:white;border:0
+}
+iframe{width:100%;height:650px;border:0;margin-top:20px}
+video,canvas{width:100%;max-width:350px;margin-top:15px}
+.hidden{display:none!important}
+
+.overlay{
+ position:fixed;inset:0;background:#000b;
+ display:flex;align-items:center;justify-content:center;
+ padding:16px;z-index:10;overflow:auto
+}
+.modal{
+ background:white;color:#242424;
+ width:100%;max-width:490px;
+ border-radius:17px;padding:25px;
+ max-height:92vh;overflow:auto
+}
+.modal h2{font-size:23px;line-height:1.4}
+.modal p{font-size:15px;line-height:1.65}
+.modal .actions{
+ display:flex;gap:12px;margin-top:20px
+}
+.actions button{flex:1}
+.allow{background:#263b2b;color:white;border:0}
+.deny{background:#eee;color:#222}
+.status{font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+</style>
+</head>
+
+<body>
+
+<header>
+<h2>BOOKS DEEPO</h2>
+<select id="language" onchange="changeLanguage()">
+<option value="en">English</option>
+<option value="bn">বাংলা</option>
+</select>
+</header>
+
+<main>
+<section class="hero">
+<h1 id="heading">Discover Your Next Chapter.</h1>
+<p id="subtitle">Read more. Learn more. Become better.</p>
+</section>
+
+<section class="card">
+<h2 id="bookTitle">Atomic Habits</h2>
+<p id="bookDescription">Small Changes, Remarkable Results.</p>
+<button class="primary" id="openBook" onclick="openBook()">
+Open E-Book
+</button>
+<div id="reader"></div>
+</section>
+
+<section class="card hidden" id="demo">
+<h2 id="demoTitle">Your Permission Test</h2>
+<p id="locationResult" class="status"></p>
+<video id="video" autoplay playsinline></video>
+<br>
+<button onclick="capturePhoto()" id="captureButton">
+Capture Photo
+</button>
+<canvas id="canvas" class="hidden"></canvas>
+<p id="photoStatus" class="status"></p>
+</section>
+</main>
+
+<!-- Permission Information Popup -->
+<div class="overlay" id="permissionPopup">
+<div class="modal">
+
+<h2 id="popupHeading">
+📚 Discover What Your Neighborhood Is Reading!
+</h2>
+
+<p id="welcome">
+Welcome to Books Deepo! To give you the best reading experience,
+we'd love to know your general location.
+</p>
+
+<h3 id="howTitle">How we use your location:</h3>
+
+<p id="howText">
+If you grant permission, your exact GPS coordinates
+(latitude and longitude) will be accessed and displayed
+in this reading experience.
+</p>
+
+<h3 id="privacyTitle">Your Privacy Matters:</h3>
+
+<p id="privacyText">
+Location and camera access are optional for this demonstration.
+Your location and camera preview stay on this device.
+No photo or location is automatically uploaded to a server.
+You can deny permission at any time.
+</p>
+
+<p id="cameraNotice">
+Camera access is used to show a live preview.
+A photo is captured only when you press Capture Photo.
+</p>
+
+<div class="actions">
+<button class="deny" onclick="denyAccess()" id="denyButton">
+Deny
+</button>
+<button class="allow" onclick="allowAccess()" id="allowButton">
+Allow
+</button>
+</div>
+
+<p id="status" class="status"></p>
+
+</div>
+</div>
+
+<script>
+const pdfURL =
+"https://dn721907.ca.archive.org/0/items/atomic-habits-book-pdf-in-hindi-1/Atomic-Habits-book-pdf-in-Hindi-1.pdf";
+
+const text = {
+en:{
+heading:"Discover Your Next Chapter.",
+subtitle:"Read more. Learn more. Become better.",
+bookTitle:"Atomic Habits",
+bookDescription:"Small Changes, Remarkable Results.",
+openBook:"Open E-Book",
+popupHeading:"📚 Discover What Your Neighborhood Is Reading!",
+welcome:"Welcome to Books Deepo! To give you the best reading experience, we'd love to know your general location.",
+howTitle:"How we use your location:",
+howText:"If you grant permission, your exact GPS coordinates (latitude and longitude) will be accessed and displayed in this reading experience.",
+privacyTitle:"Your Privacy Matters:",
+privacyText:"Location and camera access are optional for this demonstration. Your location and camera preview stay on this device. No photo or location is automatically uploaded to a server. You can deny permission at any time.",
+cameraNotice:"Camera access is used to show a live preview. A photo is captured only when you press Capture Photo.",
+allow:"Allow",deny:"Deny",
+demoTitle:"Your Permission Test",
+capture:"Capture Photo",
+denied:"Permission denied or unavailable.",
+location:"Your coordinates:",
+cameraError:"Camera permission denied or unavailable.",
+photo:"Photo captured locally on this device."
+},
+bn:{
+heading:"আপনার নতুন অধ্যায় আবিষ্কার করুন।",
+subtitle:"আরও পড়ুন। আরও শিখুন। আরও ভালো হয়ে উঠুন।",
+bookTitle:"অ্যাটমিক হ্যাবিটস",
+bookDescription:"ছোট পরিবর্তন, অসাধারণ ফলাফল।",
+openBook:"ই-বুক খুলুন",
+popupHeading:"📚 আপনার এলাকার মানুষ কী পড়ছেন জানুন!",
+welcome:"Books Deepo-তে স্বাগতম! আপনার পড়ার অভিজ্ঞতা উন্নত করতে আমরা আপনার অবস্থান জানতে চাই।",
+howTitle:"আপনার অবস্থান কীভাবে ব্যবহার করা হয়:",
+howText:"আপনি অনুমতি দিলে আপনার GPS স্থানাঙ্ক (অক্ষাংশ ও দ্রাঘিমাংশ) এই ডেমোতে দেখানো হবে।",
+privacyTitle:"আপনার গোপনীয়তা গুরুত্বপূর্ণ:",
+privacyText:"এই ডেমোতে লোকেশন এবং ক্যামেরা ব্যবহার ঐচ্ছিক। আপনার তথ্য এই ডিভাইসেই থাকবে। কোনো ছবি বা অবস্থান স্বয়ংক্রিয়ভাবে সার্ভারে পাঠানো হয় না।",
+cameraNotice:"ক্যামেরা লাইভ প্রিভিউ দেখায়। Capture Photo চাপলেই ছবি তোলা হবে।",
+allow:"অনুমতি দিন",deny:"প্রত্যাখ্যান",
+demoTitle:"অনুমতি পরীক্ষা",
+capture:"ছবি তুলুন",
+denied:"অনুমতি পাওয়া যায়নি।",
+location:"আপনার স্থানাঙ্ক:",
+cameraError:"ক্যামেরার অনুমতি পাওয়া যায়নি।",
+photo:"ছবিটি এই ডিভাইসে তোলা হয়েছে।"
+}
+};
+
+function changeLanguage(){
+ const lang=document.getElementById("language").value;
+ const t=text[lang];
+ document.documentElement.lang=lang;
+
+ const ids={
+ heading:"heading",subtitle:"subtitle",
+ bookTitle:"bookTitle",bookDescription:"bookDescription",
+ openBook:"openBook",popupHeading:"popupHeading",
+ welcome:"welcome",howTitle:"howTitle",howText:"howText",
+ privacyTitle:"privacyTitle",privacyText:"privacyText",
+ cameraNotice:"cameraNotice",allow:"allowButton",
+ deny:"denyButton",demoTitle:"demoTitle",
+ capture:"captureButton"
+ };
+
+ for(const [key,id] of Object.entries(ids)){
+  document.getElementById(id).textContent=t[key];
+ }
+}
+
+function openBook(){
+ document.getElementById("reader").innerHTML=
+ '<iframe title="Atomic Habits PDF" src="'+pdfURL+'"></iframe>';
+}
+
+function denyAccess(){
+ const lang=document.getElementById("language").value;
+ document.getElementById("status").textContent=text[lang].denied;
+ document.getElementById("permissionPopup").classList.add("hidden");
+ openBook();
+}
+
+async function allowAccess(){
+ const lang=document.getElementById("language").value;
+ const t=text[lang];
+ const status=document.getElementById("status");
+
+ try{
+  status.textContent="Requesting location permission...";
+
+  const position=await new Promise((resolve,reject)=>{
+   navigator.geolocation.getCurrentPosition(resolve,reject);
+  });
+
+  document.getElementById("locationResult").textContent=
+   t.location+" "+position.coords.latitude+
+   ", "+position.coords.longitude;
+
+  status.textContent="Requesting camera permission...";
+
+  const stream=await navigator.mediaDevices.getUserMedia({
+   video:{facingMode:"user"},audio:false
+  });
+
+  document.getElementById("video").srcObject=stream;
+  document.getElementById("demo").classList.remove("hidden");
+  document.getElementById("permissionPopup").classList.add("hidden");
+  openBook();
+
+ }catch(error){
+  status.textContent=t.denied;
+ }
+}
+
+function capturePhoto(){
+ const video=document.getElementById("video");
+ const canvas=document.getElementById("canvas");
+
+ if(!video.videoWidth)return;
+
+ canvas.width=video.videoWidth;
+ canvas.height=video.videoHeight;
+ canvas.getContext("2d").drawImage(video,0,0);
+
+ canvas.classList.remove("hidden");
+
+ document.getElementById("photoStatus").textContent=
+ text[document.getElementById("language").value].photo;
+}
+</script>
+</body>
+</html>
